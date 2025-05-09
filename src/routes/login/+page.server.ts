@@ -1,8 +1,8 @@
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions } from './$types';
 import { LoginSchema } from '$lib/domain/identity';
-import { IdentityService } from '$lib/services/identity';
-import { env } from '$env/dynamic/private'
+import { IdentityService } from '$lib/server/identity';
+import { env } from '$env/dynamic/private';
 
 export const actions = {
 	default: async ({ request, cookies }) => {
@@ -31,7 +31,7 @@ export const actions = {
 			maxAge: 60 * 60 * 2, // 2 hours
 			httpOnly: isProduction,
 			sameSite: 'lax',
-			secure: isProduction,
+			secure: isProduction
 		});
 
 		cookies.set(
@@ -46,7 +46,7 @@ export const actions = {
 				maxAge: 60 * 60 * 2, // 2 hours
 				httpOnly: isProduction,
 				sameSite: 'lax',
-				secure: isProduction,
+				secure: isProduction
 			}
 		);
 

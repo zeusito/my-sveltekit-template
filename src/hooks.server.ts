@@ -1,4 +1,4 @@
-import { ClaimsService } from '$lib/services/claims';
+import { ClaimsService, type PrincipalClaims } from '$lib/domain/claims';
 import { redirect, type Handle } from '@sveltejs/kit';
 
 export const handle: Handle = async ({ event, resolve }) => {
@@ -8,28 +8,22 @@ export const handle: Handle = async ({ event, resolve }) => {
 	const userData = cookies.get('user');
 
 	// Anonymous user claims
-	const claims = {
+	const claims: PrincipalClaims = {
 		authenticated: false,
-		name: 'Anonymous',
-		initials: 'AN',
-		orgName: 'None'
+		token: ''
 	};
 
 	// Authenticated user claims
 	if (session && userData) {
-		const decodedData = JSON.parse(userData);
-
 		claims.authenticated = true;
-		claims.name = decodedData.name;
-		claims.initials = decodedData.initials;
-		claims.orgName = decodedData.orgName;
+		claims.token = session;
 	}
 
 	// Protected paths require the user to be authenticated
 	if (url.pathname.startsWith('/home')) {
 		if (!claims.authenticated) {
 			console.log('unauthenticated, redirecting to login');
-			throw redirect(303, "/login");
+			throw redirect(303, '/login');
 		}
 	}
 

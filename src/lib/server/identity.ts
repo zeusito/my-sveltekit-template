@@ -1,5 +1,5 @@
 import type { AxiosInstance } from 'axios';
-import { backendAPI, type GenericResponse, type Result } from './common';
+import { backendAPI, logAxiosError, type GenericResponse, type Result } from './common';
 import type { AuthResponse, CreateIdentity } from '$lib/domain/identity';
 
 export class IdentityService {
@@ -30,7 +30,7 @@ export class IdentityService {
 				data: response.data
 			};
 		} catch (error) {
-			console.error('Error calling server: ', error);
+			logAxiosError('login', error);
 			return {
 				success: false
 			};
@@ -39,7 +39,7 @@ export class IdentityService {
 
 	public async register(data: CreateIdentity): Promise<Result<GenericResponse>> {
 		try {
-			const response = await this.backendAPI.post('/auth/signup', {
+			await this.backendAPI.post('/auth/signup', {
 				invitation_id: data.code,
 				email: data.email,
 				password: data.password,
@@ -51,7 +51,7 @@ export class IdentityService {
 				success: true
 			};
 		} catch (error) {
-			console.error('Error calling server: ', error);
+			logAxiosError('register', error);
 			return {
 				success: false
 			};

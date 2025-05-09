@@ -1,9 +1,6 @@
-
 export interface PrincipalClaims {
-	readonly authenticated: boolean;
-	readonly name: string;
-	readonly initials: string;
-	readonly orgName: string;
+	authenticated: boolean;
+	token: string;
 }
 
 export class ClaimsService {
