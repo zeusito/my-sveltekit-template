@@ -1,5 +1,21 @@
 import { env } from '$env/dynamic/private';
-import axios from 'axios';
+import { logger } from '$lib/logger';
+import axios, { AxiosError } from 'axios';
+
+export class APIError extends Error {
+	code: string;
+
+	constructor(code: string, message: string) {
+		super(message);
+		this.code = code;
+	}
+
+	static fromAxiosError(error: AxiosError): APIError {
+		const code = error.response?.data?.code || 'UNKNOWN_ERROR';
+		const message = error.response?.data?.message || 'An unknown error occurred';
+		return new APIError(code, message);
+	}
+}
 
 export interface Result<T, E = Error> {
 	success: boolean;
@@ -25,14 +41,16 @@ export const backendAPI = axios.create({
 	timeout: 10000
 });
 
-export const logAxiosError = (action: string, error: unknown) => {
+export const logAndHandleAxiosError = (action: string, error: unknown): APIError => {
 	if (axios.isAxiosError(error)) {
 		const axiosError = error as AxiosError;
 		const errorDataString = JSON.stringify(axiosError.response?.data, null, 2);
-		console.error(
-			`${action} call failed: Status: ${axiosError.response?.status}, Message: ${errorDataString}`
+		logger.error(
+			`${action} call failed (${axiosError.code}). Status: ${axiosError.response?.status}, Message: ${errorDataString}`
 		);
+		return APIError.fromAxiosError(axiosError);
 	} else {
-		console.error(`${action} call failed:`, error);
+		logger.error(`${action} call failed with unknown error:`, error);
+		return new APIError('UNKNOWN_ERROR', 'An unknown error occurred');
 	}
 };

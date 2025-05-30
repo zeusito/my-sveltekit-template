@@ -1,5 +1,11 @@
 import type { AxiosInstance } from 'axios';
-import { backendAPI, logAxiosError, type GenericResponse, type Result } from './common';
+import {
+	APIError,
+	backendAPI,
+	logAndHandleAxiosError,
+	type GenericResponse,
+	type Result
+} from './common';
 import type { AuthResponse, CreateIdentity } from '$lib/domain/identity';
 
 export class IdentityService {
@@ -18,7 +24,7 @@ export class IdentityService {
 		return IdentityService.instance;
 	}
 
-	public async login(username: string, password: string): Promise<Result<AuthResponse>> {
+	public async login(username: string, password: string): Promise<Result<AuthResponse, APIError>> {
 		try {
 			const response = await this.backendAPI.post('/auth/login', {
 				email: username,
@@ -30,14 +36,16 @@ export class IdentityService {
 				data: response.data
 			};
 		} catch (error) {
-			logAxiosError('login', error);
+			const apiError = logAndHandleAxiosError('login', error);
+
 			return {
-				success: false
+				success: false,
+				error: apiError
 			};
 		}
 	}
 
-	public async register(data: CreateIdentity): Promise<Result<GenericResponse>> {
+	public async register(data: CreateIdentity): Promise<Result<GenericResponse, APIError>> {
 		try {
 			await this.backendAPI.post('/auth/signup', {
 				invitation_id: data.code,
@@ -51,9 +59,11 @@ export class IdentityService {
 				success: true
 			};
 		} catch (error) {
-			logAxiosError('register', error);
+			const apiError = logAndHandleAxiosError('register', error);
+
 			return {
-				success: false
+				success: false,
+				error: apiError
 			};
 		}
 	}
