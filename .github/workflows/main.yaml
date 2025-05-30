@@ -14,6 +14,8 @@ jobs:
   lint:
     name: Lint Code
     runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -34,6 +36,8 @@ jobs:
   sast:
     name: semgrep/ci
     runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
     container:
       image: returntocorp/semgrep
     # Skip any PR created by dependabot to avoid permission issues:
