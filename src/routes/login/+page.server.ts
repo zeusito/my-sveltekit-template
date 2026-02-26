@@ -1,55 +1,73 @@
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions } from './$types';
-import { LoginSchema } from '$lib/domain/identity';
-import { IdentityService } from '$lib/server/identity';
+import { LoginWithOTPSchema, VerifyOTPSchema } from '$lib/models/identity';
 import { env } from '$env/dynamic/private';
+import { IdentityService } from '$lib/server/gateway/identity';
+import { logger } from '$lib/logger';
 
 export const actions = {
-	default: async ({ request, cookies }) => {
-		const data = await request.formData();
+	sendOTP: async (event) => {
+		const data = await event.request.formData();
 
-		const formData = LoginSchema.safeParse(Object.fromEntries(data.entries()));
+		logger.info('signing in');
+
+		const formData = LoginWithOTPSchema.safeParse(Object.fromEntries(data.entries()));
 
 		if (!formData.success) {
-			return fail(400, { success: false });
+			return fail(400, { success: false, step: 1, error: 'Invalid Credentials' });
 		}
 
-		const resp = await IdentityService.getInstance().login(
-			formData.data.email,
-			formData.data.password
+		const resp = await IdentityService.getInstance().loginWithEmailOTP(formData.data.email);
+
+		if (!resp.success) {
+			return fail(400, {
+				success: false,
+				step: 1,
+				error: resp.error?.message.includes('locked')
+					? 'Account is locked, Please wait 30 minutes'
+					: 'Invalid Credentials'
+			});
+		}
+
+		return {
+			success: true,
+			step: 2,
+			email: formData.data.email.toLowerCase()
+		};
+	},
+	validateOTP: async (event) => {
+		const data = await event.request.formData();
+
+		const formData = VerifyOTPSchema.safeParse(Object.fromEntries(data.entries()));
+
+		if (!formData.success) {
+			return fail(400, { success: false, step: 2, error: 'Invalid Credentials' });
+		}
+
+		const resp = await IdentityService.getInstance().verifyOTP(
+			formData.data.email.toLowerCase(),
+			formData.data.code
 		);
 
 		if (!resp.success) {
-			return fail(401, { success: false });
+			return fail(400, {
+				success: false,
+				step: 2,
+				error: 'Invalid Credentials'
+			});
 		}
 
 		// We are good to go
 		const isProduction = env.NODE_ENV === 'production';
 
-		cookies.set('session', resp.data!.access_token, {
+		event.cookies.set('session', resp.data!.accessToken, {
 			path: '/',
-			maxAge: 60 * 60 * 2, // 2 hours
+			maxAge: 60 * 60 * 24 * 5, // 5 days
 			httpOnly: isProduction,
 			sameSite: 'lax',
 			secure: isProduction
 		});
 
-		cookies.set(
-			'user',
-			JSON.stringify({
-				name: resp.data!.first_name,
-				initials: resp.data!.initials,
-				orgName: resp.data!.org_name
-			}),
-			{
-				path: '/',
-				maxAge: 60 * 60 * 2, // 2 hours
-				httpOnly: isProduction,
-				sameSite: 'lax',
-				secure: isProduction
-			}
-		);
-
-		redirect(303, '/home/dashboard');
+		redirect(303, '/portal/studies');
 	}
 } satisfies Actions;

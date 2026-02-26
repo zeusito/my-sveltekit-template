@@ -1,4 +1,7 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
+
+import type { ClaimsService } from '$lib/models/claims';
+
 // for information about these interfaces
 declare global {
 	namespace App {

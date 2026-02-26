@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import Button from '$lib/components/ui/button/button.svelte';
 </script>
 
 {#if page.status === 404}
-	<main class="grid min-h-full place-items-center bg-white px-6 py-24 sm:py-32 lg:px-8">
+	<main class="grid min-h-full place-items-center bg-background px-6 py-24 sm:py-32 lg:px-8">
 		<div class="text-center">
 			<p class="text-base font-semibold text-secondary">404</p>
 			<h1 class="mt-4 text-balance text-5xl font-semibold tracking-tight text-gray-900 sm:text-7xl">
@@ -13,12 +14,12 @@
 				Sorry, we couldn&apos;t find the page you&apos;re looking for.
 			</p>
 			<div class="mt-10 flex items-center justify-center gap-x-6">
-				<a href="/home" class="btn btn-primary">Go back home</a>
+				<Button href="/home">Go back home</Button>
 			</div>
 		</div>
 	</main>
 {:else}
-	<main class="grid min-h-full place-items-center bg-white px-6 py-24 sm:py-32 lg:px-8">
+	<main class="grid min-h-full place-items-center bg-background px-6 py-24 sm:py-32 lg:px-8">
 		<div class="text-center">
 			<p class="text-base font-semibold text-secondary">404</p>
 			<h1 class="mt-4 text-balance text-5xl font-semibold tracking-tight text-gray-900 sm:text-7xl">
@@ -28,7 +29,7 @@
 				Sorry, we couldn&apos;t find the page you&apos;re looking for.
 			</p>
 			<div class="mt-10 flex items-center justify-center gap-x-6">
-				<a href="/home" class="btn btn-primary">Go back home</a>
+				<Button href="/home">Go back home</Button>
 			</div>
 		</div>
 	</main>

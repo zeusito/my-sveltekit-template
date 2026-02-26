@@ -1,18 +1,23 @@
 <script lang="ts">
-	import Topbar from '$lib/components/shared/topbar.svelte';
 	import type { Snippet } from 'svelte';
+	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+	import AppHeader from '$lib/components/bars/app-topbar.svelte';
+	import AppSidebar from '$lib/components/bars/app-sidebar.svelte';
 	import type { LayoutData } from './$types';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
 </script>
 
-<div class="min-h-full">
-	<Topbar initials={data.claims.initials} />
-	<div class="py-2">
-		<main>
-			<div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-				{@render children()}
-			</div>
+<Sidebar.Provider>
+	<AppSidebar
+		roles={data.claims.roles}
+		userName={data.claims.firstName}
+		email={data.claims.email}
+	/>
+	<Sidebar.Inset>
+		<AppHeader orgName={data.claims.orgName} orgUrl="My Org" />
+		<main class="min-h-full flex flex-col w-full p-4">
+			{@render children?.()}
 		</main>
-	</div>
-</div>
+	</Sidebar.Inset>
+</Sidebar.Provider>
